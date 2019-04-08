@@ -46,7 +46,6 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,96 +135,6 @@ class ConfigBuild {
             System.err.println("BuildRoot: " + buildRoot);
 
             Omega.nativeCompile(buildRoot, omegaConfig, cp0 + File.pathSeparator + path, target);
-
-            String cp = Omega.getClassPath().stream()
-                    .collect(Collectors.joining(File.pathSeparator));
-
-            String mp = Omega.getModulePath().stream()
-                    .collect(Collectors.joining(File.pathSeparator));
-
-            String ump = Omega.getUpgradeModulePath().stream()
-                    .collect(Collectors.joining(File.pathSeparator));
-
-            LinkedList<String> linkedList = new LinkedList<>();
-            linkedList.add("-XX:+UnlockExperimentalVMOptions");
-            linkedList.add("-XX:+EnableJVMCI");
-            linkedList.add("-XX:-UseJVMCICompiler");
-            linkedList.add("-Dtruffle.TrustAllTruffleRuntimeProviders=true");
-            linkedList.add("-Dsubstratevm.IgnoreGraalVersionCheck=true");
-            linkedList.add("-Djava.lang.invoke.stringConcat=BC_SB");
-            if (target.startsWith("ios")) {
-                linkedList.add("-Dtargetos.name=iOS");
-            }
-            linkedList.add("-Xss10m");
-            linkedList.add("-Xms1g");
-            linkedList.add("-Xmx13441813704");
-            linkedList.add("-Dprism.marlinrasterizer=false");
-            linkedList.add("-Duser.country=US");
-            linkedList.add("-Duser.language=en");
-            linkedList.add("-Dgraalvm.version=" + omegaExtension.getGraalVersion());
-            linkedList.add("-Xdebug");
-            linkedList.add("-Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=n");
-            linkedList.add("-Dorg.graalvm.version=" + omegaExtension.getGraalVersion());
-            linkedList.add("-Dcom.oracle.graalvm.isaot=true");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.runtime=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.code=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.amd64=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.meta=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.hotspot=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.services=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.common=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.ci/jdk.vm.ci.code.site=ALL-UNNAMED");
-            linkedList.add("--add-exports");
-            linkedList.add("jdk.internal.vm.compiler/org.graalvm.compiler.options=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("jdk.unsupported/sun.reflect=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/jdk.internal.module=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/jdk.internal.ref=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/jdk.internal.reflect=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/java.lang=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/java.lang.invoke=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/java.lang.ref=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/java.net=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/java.nio=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("java.base/java.util=ALL-UNNAMED");
-            linkedList.add("--add-opens");
-            linkedList.add("org.graalvm.sdk/org.graalvm.nativeimage.impl=ALL-UNNAMED");
-            linkedList.add("--module-path");
-            linkedList.add(mp);
-            linkedList.add("--upgrade-module-path");
-            linkedList.add(ump);
-            linkedList.add("-cp");
-            linkedList.add(cp);
-            project.javaexec(spec -> {
-                spec.setJvmArgs(linkedList);
-                spec.setMain("com.oracle.svm.hosted.NativeImageGeneratorRunner");
-                List<String> runtimeArgs = Omega.getRuntimeArgs();
-
-                List<String> bundles = Omega.getBundlesList();
-                bundles.addAll(omegaExtension.getBundles());
-                if (! bundles.isEmpty()) {
-                    runtimeArgs.add("-H:IncludeResourceBundles=" +
-                            bundles.stream().collect(Collectors.joining(",")));
-                }
-                spec.setArgs(runtimeArgs);
-            });
         } catch (Exception e) {
             e.printStackTrace();
         }
