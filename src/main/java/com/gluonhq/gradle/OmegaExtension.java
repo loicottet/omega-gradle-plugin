@@ -50,6 +50,9 @@ public class OmegaExtension {
     private final List<String> delayInitList;
     private final List<String> runtimeArgsList;
     private File javafxSdk;
+    private File graalSdk;
+
+    private final List<File> graalDeps;
 
     public OmegaExtension(Project project) {
         this.graalVersion = DEFAULT_GRAAL_VERSION;
@@ -61,6 +64,9 @@ public class OmegaExtension {
         this.delayInitList = new ArrayList<>();
         this.runtimeArgsList = new ArrayList<>();
         this.javafxSdk = project.getRootDir();
+        this.graalSdk = project.getRootDir();
+
+        this.graalDeps = new ArrayList<>();
     }
 
     public String getGraalVersion() {
@@ -93,6 +99,14 @@ public class OmegaExtension {
 
     public void setJavafxSdk(File javafxSdk) {
         this.javafxSdk = javafxSdk;
+    }
+
+    public File getGraalSdk() {
+        return graalSdk;
+    }
+
+    public void setGraalSdk(File graalSdk) {
+        this.graalSdk = graalSdk;
     }
 
     public List<String> getBundles() {
@@ -141,4 +155,12 @@ public class OmegaExtension {
         this.runtimeArgsList.addAll(runtimeArgsList);
     }
 
+    public List<File> getGraalDeps() {
+        return graalDeps;
+    }
+
+    public void setGraalDeps(List<File> graalDeps) {
+        this.graalDeps.clear();
+        this.graalDeps.addAll(graalDeps);
+    }
 }
