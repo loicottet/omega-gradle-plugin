@@ -34,6 +34,8 @@ import com.gluonhq.gradle.tasks.OmegaNativeCompile;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Locale;
 
 public class OmegaPlugin implements Plugin<Project> {
@@ -47,6 +49,18 @@ public class OmegaPlugin implements Plugin<Project> {
         OmegaExtension omega = project.getExtensions().create("omega", OmegaExtension.class, project);
 
         project.afterEvaluate(a -> {
+            File path = omega.getGraalSdk();
+            omega.setGraalDeps(Arrays.asList(
+                    new File(path, "/svm/library-support.jar"),
+                    new File(path, "/svm/builder/objectfile.jar"),
+                    new File(path, "/svm/builder/pointsto.jar"),
+                    new File(path, "/svm/builder/svm.jar"),
+                    new File(path, "/svm/clibraries"),
+                    new File(path, "/boot/graal-sdk.jar"),
+                    new File(path, "/jvmci/graal.jar"),
+                    new File(path, "/truffle/truffle-api.jar")
+            ));
+
             OmegaDependencies omegaDependencies = project.getTasks().create("omegaDependencies", OmegaDependencies.class);
             omegaDependencies.setGraalVersion(omega.getGraalVersion());
             omegaDependencies.setOutputDirectory(project.getLayout().getBuildDirectory().dir("omega/deps/" + omega.getGraalVersion()));
@@ -71,21 +85,6 @@ public class OmegaPlugin implements Plugin<Project> {
 
             String osname = System.getProperty("os.name");
             System.err.println("Omega-Plugin, osname = "+osname);
-            String hostedNative = "";
-            if (osname.toLowerCase(Locale.ROOT).contains("linux")) {
-                hostedNative = "svm-hosted-native-linux-amd64";
-            } else if (osname.toLowerCase(Locale.ROOT).contains("mac")) {
-                hostedNative = "svm-hosted-native-darwin-amd64";
-            }
-
-            project.getDependencies().add(CONFIGURATION_OMEGA, "com.oracle.substratevm:" + hostedNative + ":" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "com.oracle.substratevm:library-support:" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "com.oracle.substratevm:objectfile:" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "com.oracle.substratevm:pointsto:" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "com.oracle.substratevm:svm:" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "org.graalvm.sdk:graal-sdk:" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "org.graalvm.compiler:compiler:" + omega.getGraalVersion());
-            project.getDependencies().add(CONFIGURATION_OMEGA, "org.graalvm.truffle:truffle-api:" + omega.getGraalVersion());
 
             // LLVM
             if (omega.getBackend().equals("llvm")) {

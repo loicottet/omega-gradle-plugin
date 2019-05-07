@@ -29,18 +29,20 @@
  */
 package com.gluonhq.gradle.tasks;
 
+import com.gluonhq.gradle.OmegaExtension;
 import com.gluonhq.gradle.OmegaPlugin;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.PublishArtifact;
-import org.gradle.api.artifacts.PublishArtifactSet;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.file.Directory;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
+import java.io.File;
+import java.util.List;
 import java.util.Set;
 
 public class OmegaDependencies extends DefaultTask {
@@ -68,39 +70,48 @@ public class OmegaDependencies extends DefaultTask {
 
     @TaskAction
     public void action() {
-        Configuration omegaConfiguration = getProject().getConfigurations().findByName(OmegaPlugin.CONFIGURATION_OMEGA);
-        if (omegaConfiguration != null) {
-            Set<ResolvedArtifact> artifacts = omegaConfiguration.getResolvedConfiguration().getResolvedArtifacts();
-            omegaConfiguration.getFiles()
-                    .forEach(f -> {
-                        ResolvedArtifact artifact = artifacts.stream()
-                                .filter(a -> a.getFile().getAbsolutePath().equals(f.getAbsolutePath()))
-                                .findFirst()
-                                .orElseThrow(() -> new RuntimeException("Artifact not found for " + f.getAbsolutePath()));
-                        getProject().copy(c -> {
+        OmegaExtension omegaExtension = getProject().getExtensions().getByType(OmegaExtension.class);
+        omegaExtension.getGraalDeps().forEach(f -> {
+            getProject().copy(c -> {
                             getProject().getLogger().info("Copying omega dependency " + f.getName() + " to " + this.outputDirectory);
                             c.from(f);
                             c.into(getOutputDirectory());
-                            c.rename(s -> {
-                                if (artifact.getName().equals("llvm")) {
-                                    if (artifact.getClassifier() != null) {
-                                        return artifact.getName() + "-platform-specific.jar";
-                                    } else {
-                                        return artifact.getName() + "-wrapper.jar";
-                                    }
-                                }
-                                return artifact.getName() + ".jar";
-                            });
-                        });
-                    });
+            });
+        });
 
-            omegaConfiguration.getFiles().stream()
-                    .filter(f -> f.getName().endsWith(".zip"))
-                    .forEach(f -> getProject().copy(c -> {
-                        getProject().getLogger().info("Unzipping omega dependency " + f.getName() + " to " + this.outputDirectory);
-                        c.from(getProject().zipTree(getProject().file(f)));
-                        c.into(getOutputDirectory());
-                    }));
-        }
+//        Configuration omegaConfiguration = getProject().getConfigurations().findByName(OmegaPlugin.CONFIGURATION_OMEGA);
+//        if (omegaConfiguration != null) {
+//            Set<ResolvedArtifact> artifacts = omegaConfiguration.getResolvedConfiguration().getResolvedArtifacts();
+//            omegaConfiguration.getFiles()
+//                    .forEach(f -> {
+//                        ResolvedArtifact artifact = artifacts.stream()
+//                                .filter(a -> a.getFile().getAbsolutePath().equals(f.getAbsolutePath()))
+//                                .findFirst()
+//                                .orElseThrow(() -> new RuntimeException("Artifact not found for " + f.getAbsolutePath()));
+//                        getProject().copy(c -> {
+//                            getProject().getLogger().info("Copying omega dependency " + f.getName() + " to " + this.outputDirectory);
+//                            c.from(f);
+//                            c.into(getOutputDirectory());
+//                            c.rename(s -> {
+//                                if (artifact.getName().equals("llvm")) {
+//                                    if (artifact.getClassifier() != null) {
+//                                        return artifact.getName() + "-platform-specific.jar";
+//                                    } else {
+//                                        return artifact.getName() + "-wrapper.jar";
+//                                    }
+//                                }
+//                                return artifact.getName() + ".jar";
+//                            });
+//                        });
+//                    });
+//
+//            omegaConfiguration.getFiles().stream()
+//                    .filter(f -> f.getName().endsWith(".zip"))
+//                    .forEach(f -> getProject().copy(c -> {
+//                        getProject().getLogger().info("Unzipping omega dependency " + f.getName() + " to " + this.outputDirectory);
+//                        c.from(getProject().zipTree(getProject().file(f)));
+//                        c.into(getOutputDirectory());
+//                    }));
+//        }
     }
 }

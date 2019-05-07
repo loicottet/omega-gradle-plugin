@@ -44,6 +44,7 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -122,10 +123,9 @@ class ConfigBuild {
             }
             System.err.println("classPath = " + classPath);
 
-            Configuration config = project.getBuildscript().getConfigurations().getByName("classpath");
-            String path = config.getFiles().stream()
+            String path = omegaExtension.getGraalDeps().stream()
+                    .filter(f -> ! Files.isDirectory(f.toPath()))
                     .map(File::getAbsolutePath)
-                    .filter(s -> s.contains("oracle") || s.contains("graal") || s.contains("bytedeco"))
                     .collect(Collectors.joining(File.pathSeparator));
             String cp0 = classPath.stream()
                     .map(Path::toString)
@@ -134,7 +134,10 @@ class ConfigBuild {
             String buildRoot = project.getLayout().getBuildDirectory().dir("omega").get().getAsFile().getAbsolutePath();
             System.err.println("BuildRoot: " + buildRoot);
 
-            Omega.nativeCompile(buildRoot, omegaConfig, cp0 + File.pathSeparator + path, target);
+            String cp = cp0 + File.pathSeparator + path;
+            System.err.println("CP: " + cp);
+
+            Omega.nativeCompile(buildRoot, omegaConfig, cp, target);
         } catch (Exception e) {
             e.printStackTrace();
         }
