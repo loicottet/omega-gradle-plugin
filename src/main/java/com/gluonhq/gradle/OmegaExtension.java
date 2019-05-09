@@ -37,7 +37,7 @@ import java.util.List;
 
 public class OmegaExtension {
 
-    private static final String DEFAULT_GRAAL_VERSION = "1.0.0-rc16-SNAPSHOT";
+    private static final String DEFAULT_GRAAL_VERSION = "1.0.0-rc18-SNAPSHOT";
     public static final String DEFAULT_TARGET = "host";
     public static final String DEFAULT_BACKEND = "llvm";
 

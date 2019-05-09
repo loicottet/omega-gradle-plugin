@@ -55,8 +55,13 @@ public class OmegaPlugin implements Plugin<Project> {
                     new File(path, "/svm/builder/objectfile.jar"),
                     new File(path, "/svm/builder/pointsto.jar"),
                     new File(path, "/svm/builder/svm.jar"),
+                    new File(path, "/svm/builder/svm-llvm.jar"),
+                    new File(path, "/svm/builder/graal-llvm.jar"),
+                    new File(path, "/svm/builder/javacpp.jar"),
+                    new File(path, "/svm/builder/llvm-wrapper.jar"),
+                    new File(path, "/svm/builder/llvm-platform-specific.jar"),
                     new File(path, "/svm/clibraries"),
-                    new File(path, "/boot/graal-sdk.jar"),
+                    new File(path, "/jvmci/graal-sdk.jar"),
                     new File(path, "/jvmci/graal.jar"),
                     new File(path, "/truffle/truffle-api.jar")
             ));
